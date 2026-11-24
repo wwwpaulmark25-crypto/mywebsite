@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Class | Apex</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">SJ</span><span>APEX <small>Saint Jude Primary School · Hoima</small></span></a><nav><a href="index.html">Home</a><a href="grading.html">Grading</a><a class="active" href="classes.html">Classes</a></nav></header>
+<main class="section page-main">
+  <p class="eyebrow">TEACHER PORTAL</p><h1>Select your class and stream</h1><p class="lead">Choose the class you teach. You will be asked for that class's shared password.</p>
+  <div id="classGrid" class="class-grid"></div>
+  <p id="classMessage" class="message" aria-live="polite"></p>
+  <div class="notice"><strong>Demo class passwords:</strong> P1-Giraffe A: 11111 · P1-Giraffe B: 11112, continuing by class. Replace these sample codes before using the portal. The same class password can be shared by the four teachers assigned to that class.</div>
+</main><footer>© 2026 Apex · Saint Jude Primary School Hoima</footer>
+<script>
+const levels = ["Baby Class","Middle Class","Top Class","P1","P2","P3","P4","P5","P6","P7"];
+const streams = ["Giraffe A","Giraffe B"];
+const grid = document.getElementById("classGrid");
+let code = 11111;
+levels.forEach(level => streams.forEach(stream => {
+  const card = document.createElement("button");
+  card.className = "class-card";
+  card.type = "button";
+  card.innerHTML = `<span>${level}</span><strong>${stream}</strong><small>Open class →</small>`;
+  card.addEventListener("click", () => {
+    const entered = prompt(`Enter the shared password for ${level} - ${stream}:`);
+    if (entered === null) return;
+    if (entered === String(code)) location.href = `results.html?role=teacher&class=${encodeURIComponent(level)}&stream=${encodeURIComponent(stream)}`;
+    else document.getElementById("classMessage").textContent = "Incorrect class password. Please try again.";
+  });
+  grid.appendChild(card);
+  code++;
+}));
+</script>
+</body></html>

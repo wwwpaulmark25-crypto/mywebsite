@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saint Jude Primary School Hoima | Apex</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html"><span class="brand-mark">SJ</span><span>APEX <small>Saint Jude Primary School · Hoima</small></span></a>
+  <nav><a class="active" href="index.html">Home</a><a href="grading.html">Grading</a><a href="classes.html">Classes</a></nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">LEARN · GROW · EXCEL</p>
+      <h1>Welcome to <span>Saint Jude</span> Primary School</h1>
+      <p class="hero-text">A simple school results portal for teachers, the secretary and the headteacher.</p>
+      <a class="button button-light" href="classes.html">Explore classes</a>
+    </div>
+    <div class="hero-badge"><span>APEX</span><strong>RESULTS<br>PORTAL</strong><small>HOIMA, UGANDA</small></div>
+  </section>
+
+  <section class="section">
+    <div class="section-heading"><p class="eyebrow">PORTAL ACCESS</p><h2>Choose your access area</h2><p>Teachers select their class. The headteacher and secretary sign in below.</p></div>
+    <div class="role-grid">
+      <article class="role-card"><div class="role-icon">⌂</div><h3>Headteacher</h3><p>View results across all classes and streams.</p>
+        <form id="headForm" class="login-form"><label for="headPassword">Headteacher password</label><input id="headPassword" type="password" placeholder="Enter password" required><button class="button" type="submit">Access all results</button><p id="headMessage" class="message" aria-live="polite"></p></form>
+      </article>
+      <article class="role-card"><div class="role-icon">▤</div><h3>Secretary</h3><p>Review class marks and manage the secretary password.</p>
+        <form id="secretaryForm" class="login-form"><label for="secretaryPassword">Secretary password</label><input id="secretaryPassword" type="password" placeholder="Enter password" required><button class="button" type="submit">Open secretary area</button><p id="secretaryMessage" class="message" aria-live="polite"></p></form>
+        <button class="text-button" id="changeSecretary">Change secretary password</button>
+      </article>
+      <article class="role-card"><div class="role-icon">✎</div><h3>Teacher</h3><p>Choose your class and enter its shared class password on the next page.</p><a class="button" href="classes.html">Continue as teacher</a></article>
+    </div>
+  </section>
+
+  <section class="notice"><strong>Important:</strong> This is a front-end demonstration. Passwords and marks are stored only in this browser and are not secure or shared between devices. Do not enter real pupil information until a secure server and database are connected.</section>
+</main>
+<footer>© 2026 Apex · Saint Jude Primary School Hoima</footer>
+<script>
+const DEFAULT_PASSWORD = "12345";
+if (!localStorage.getItem("apex_secretary_password")) localStorage.setItem("apex_secretary_password", DEFAULT_PASSWORD);
+
+document.getElementById("headForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const msg = document.getElementById("headMessage");
+  if (document.getElementById("headPassword").value === DEFAULT_PASSWORD) location.href = "results.html?role=head";
+  else msg.textContent = "Incorrect headteacher password.";
+});
+document.getElementById("secretaryForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const msg = document.getElementById("secretaryMessage");
+  if (document.getElementById("secretaryPassword").value === localStorage.getItem("apex_secretary_password")) location.href = "results.html?role=secretary";
+  else msg.textContent = "Incorrect secretary password.";
+});
+document.getElementById("changeSecretary").addEventListener("click", () => {
+  const current = prompt("Enter the current secretary password:");
+  if (current === null) return;
+  if (current !== localStorage.getItem("apex_secretary_password")) { alert("Current password is incorrect."); return; }
+  const next = prompt("Enter a new secretary password (at least 5 characters):");
+  if (!next) return;
+  if (next.length < 5) { alert("Use at least 5 characters."); return; }
+  localStorage.setItem("apex_secretary_password", next);
+  alert("Secretary password changed in this browser.");
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Results Workspace | Apex</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">SJ</span><span>APEX <small>Saint Jude Primary School · Hoima</small></span></a><nav><a href="index.html">Home</a><a href="grading.html">Grading</a><a href="classes.html">Classes</a></nav></header>
+<main class="section page-main">
+  <p class="eyebrow">RESULTS WORKSPACE</p><h1 id="pageTitle">Class results</h1><p class="lead" id="pageDescription"></p>
+  <div class="toolbar"><label>Class <select id="classSelect"></select></label><label>Stream <select id="streamSelect"><option>Giraffe A</option><option>Giraffe B</option></select></label><button class="button" id="loadClass">Load class</button></div>
+  <div class="table-wrap"><table id="marksTable"><thead><tr><th>Pupil name</th><th>Mathematics</th><th>English</th><th>Science</th><th>Social Studies</th><th>CRE</th><th>ICT</th><th>Total</th><th>Average</th><th>Grade</th></tr></thead><tbody></tbody></table></div>
+  <div class="actions"><button class="button" id="addPupil">Add pupil</button><button class="button button-outline" id="saveMarks">Save marks</button><button class="button button-outline" onclick="window.print()">Print results</button></div>
+  <p class="message" id="status" aria-live="polite"></p>
+  <div class="notice">This demonstration stores marks in this browser only. It does not securely save, transmit, or back up pupil records. Use fictional names and marks while testing.</div>
+</main><footer>© 2026 Apex · Saint Jude Primary School Hoima</footer>
+<script>
+const params = new URLSearchParams(location.search);
+const role = params.get("role") || "teacher";
+const levels = ["Baby Class","Middle Class","Top Class","P1","P2","P3","P4","P5","P6","P7"];
+const subjects = ["Mathematics","English","Science","Social Studies","CRE","ICT"];
+const classSelect = document.getElementById("classSelect");
+levels.forEach(x => classSelect.add(new Option(x,x)));
+const streamSelect = document.getElementById("streamSelect");
+let activeClass = params.get("class") || "P1";
+let activeStream = params.get("stream") || "Giraffe A";
+classSelect.value = activeClass; streamSelect.value = activeStream;
+document.getElementById("pageTitle").textContent = role === "head" ? "Headteacher — all results" : role === "secretary" ? "Secretary — results desk" : `${activeClass} · ${activeStream}`;
+document.getElementById("pageDescription").textContent = role === "head" ? "View and print results for every class and stream. Select a class below." : role === "secretary" ? "Review and print results for the selected class and stream." : "Enter pupil marks. The total, average and available grade are calculated automatically.";
+if (role === "teacher") { classSelect.disabled = true; streamSelect.disabled = true; document.getElementById("loadClass").hidden = true; }
+
+const key = () => `apex_marks_${classSelect.value}_${streamSelect.value}`;
+function grade(avg) { if (avg >= 92 && avg <= 100) return "D1"; if (avg >= 82 && avg <= 89) return "B2"; return "Confirm grade"; }
+function readRows() {
+  try { return JSON.parse(localStorage.getItem(key())) || [{name:"Amina Example",marks:{}},{name:"Brian Example",marks:{}}]; }
+  catch { return []; }
+}
+function render() {
+  const body = document.querySelector("#marksTable tbody"); body.innerHTML = "";
+  readRows().sort((a,b)=>a.name.localeCompare(b.name)).forEach((pupil, index) => {
+    const tr = document.createElement("tr");
+    const name = document.createElement("td");
+    const input = document.createElement("input"); input.value = pupil.name; input.className="name-input"; input.setAttribute("aria-label","Pupil name"); input.disabled = role === "head";
+    name.appendChild(input); tr.appendChild(name);
+    let total = 0, count = 0;
+    subjects.forEach(subject => {
+      const td = document.createElement("td"), mark = document.createElement("input");
+      mark.type="number"; mark.min="0"; mark.max="100"; mark.className="mark-input"; mark.value = pupil.marks[subject] ?? ""; mark.disabled = role === "head" || role === "secretary";
+      mark.dataset.subject = subject; mark.addEventListener("input", () => updateRow(tr));
+      td.appendChild(mark); tr.appendChild(td);
+      const n = Number(mark.value); if (mark.value !== "" && n >= 0 && n <= 100) { total += n; count++; }
+    });
+    ["total","average","grade"].forEach(kind => { const td=document.createElement("td"); td.className=kind; tr.appendChild(td); });
+    tr.dataset.index = index; updateRow(tr); body.appendChild(tr);
+  });
+}
+function updateRow(tr) {
+  const marks = [...tr.querySelectorAll(".mark-input")];
+  let total=0,count=0;
+  marks.forEach(i => { const n=Number(i.value); if(i.value!=="" && n>=0 && n<=100){total+=n;count++;} });
+  tr.querySelector(".total").textContent = total;
+  const avg = count ? total/count : 0;
+  tr.querySelector(".average").textContent = count ? avg.toFixed(1) : "—";
+  tr.querySelector(".grade").textContent = count === subjects.length ? grade(avg) : "—";
+}
+document.getElementById("loadClass").addEventListener("click", () => { activeClass=classSelect.value; activeStream=streamSelect.value; render(); });
+document.getElementById("addPupil").addEventListener("click", () => {
+  if (role === "head" || role === "secretary") return;
+  const rows=readRows(); rows.push({name:"New pupil",marks:{}}); localStorage.setItem(key(),JSON.stringify(rows)); render();
+});
+document.getElementById("saveMarks").addEventListener("click", () => {
+  if (role === "head" || role === "secretary") { document.getElementById("status").textContent="This access level is view-only."; return; }
+  const rows=[...document.querySelectorAll("#marksTable tbody tr")].map(tr=>{
+    const marks={}; tr.querySelectorAll(".mark-input").forEach(i=>{if(i.value!=="") marks[i.dataset.subject]=Math.max(0,Math.min(100,Number(i.value)));});
+    return {name:tr.querySelector(".name-input").value.trim(),marks};
+  });
+  localStorage.setItem(key(),JSON.stringify(rows)); document.getElementById("status").textContent="Saved in this browser.";
+});
+render();
+</script>
+</body></html>
